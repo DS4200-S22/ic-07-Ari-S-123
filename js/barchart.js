@@ -89,19 +89,19 @@ const mouseover1 = function (event, d) {
 }
 
 // Listener function for mouse movements that moves the tooltip with the mouse.
-const mousemove1 = function (event, d) {
+const mousemove1 = function (event) {
   tooltip1.style("left", (event.x) + "px")
   .style("top", (event.y + yTooltipOffset) + "px");
 }
 
 // Makes the tooltip invisible when the mouse leaves the region.
-const mouseleave1 = function (event, d) {
+const mouseleave1 = function () {
   tooltip1.style("opacity", 0);
 }
 
 /* 
 
-  Bars 
+  Bar
 
 */
 
@@ -119,3 +119,108 @@ svg1.selectAll(".bar")
 .on("mouseover", mouseover1)
 .on("mousemove", mousemove1)
 .on("mouseleave", mouseleave1);
+
+// Chart 2:-
+
+// Copy of svg 1
+const svg2 = d3
+.select("#csv-bar")
+.append("svg")
+.attr("width", width - margin.left - margin.right)
+.attr("height", height - margin.top - margin.bottom)
+.attr("viewBox", [0, 0, width, height]);
+
+// csv data
+d3.csv("data/barchart.csv").then((csvData) => {
+
+  /*
+
+  Axes
+
+  */
+
+  // Finds the maximum score in csvData.
+  let maxY2 = d3.max(csvData, function (d) {
+    return d.score;
+  });
+
+  // Creates a visual linear scale with a domain from 0 to the maximum score
+  // in the data, and with a range from the bottom of the margin to the top.
+  let yScale2 = d3.scaleLinear()
+  .domain([0, maxY2])
+  .range([height - margin.bottom, margin.top]);
+
+  // Creates a band scale with a domain stretching the length of the data, a
+  // range that stretches the wind of the margin, and 0.1 units of padding.
+  let xScale2 = d3.scaleBand()
+  .domain(d3.range(csvData.length))
+  .range([margin.left, width - margin.right])
+  .padding(0.1);
+
+  // Appends 'g' to svg1 and applies a transformation to it, then creates a
+  // vertical left axis and sets the font size to 20px.
+  svg2.append("g")
+  .attr("transform",
+      `translate(${margin.left}, 0)`)
+  .call(d3.axisLeft(yScale2))
+  .attr("font-size", '20px');
+
+  // Appends 'g' to svg1 and applies a transformation to it, then creates a
+  // horizontal axis at the bottom and sets the font size to 20px.
+  svg2.append("g")
+  .attr("transform",
+      `translate(0,${height - margin.bottom})`)
+  .call(d3.axisBottom(xScale2)
+  .tickFormat(i => csvData[i].name))
+  .attr("font-size", '20px');
+
+  /*
+    Tooltip Set-up
+  */
+
+  // Adds a tooltip to the bar graph that is initially invisible.
+  const tooltip2 = d3.select("#csv-bar")
+  .append("div")
+  .attr('id', "tooltip2")
+  .style("opacity", 0)
+  .attr("class", "tooltip");
+
+  // Edits the tooltip with the name and score of a datapoint that becomes
+  // visible when the cursor hovers over it.
+  const mouseover2 = function (event, d) {
+    tooltip2.html("Name: " + d.name + "<br> Score: " + d.score + "<br>")
+    .style("opacity", 1);
+  }
+
+  // Listener function for mouse movements that moves the tooltip with the mouse.
+  const mousemove2 = function (event) {
+    tooltip2.style("left", (event.pageX) + "px")
+    .style("top", (event.pageY + yTooltipOffset) + "px");
+  }
+
+  // Makes the tooltip invisible when the mouse leaves the region.
+  const mouseleave2 = function () {
+    tooltip2.style("opacity", 0);
+  }
+
+  /*
+    Bar
+  */
+
+  // Enters the data into the bar chart, scales and it appropriately, and then
+  // adds the mouse listener functions.
+  svg2.selectAll(".bar")
+  .data(csvData)
+  .enter()
+  .append("rect")
+  .attr("class", "bar")
+  .attr("x", (d, i) => xScale2(i))
+  .attr("y", (d) => yScale2(d.score))
+  .attr("height",
+      (d) => (height - margin.bottom) - yScale2(d.score))
+  .attr("width", xScale2.bandwidth())
+  .on("mouseover", mouseover2)
+  .on("mousemove", mousemove2)
+  .on("mouseleave", mouseleave2);
+
+});
