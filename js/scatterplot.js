@@ -26,7 +26,6 @@ const svg = d3
 
 // csv data
 d3.csv("data/scatter.csv").then((csvData) => {
-  console.log(csvData);
 
   /*
 
